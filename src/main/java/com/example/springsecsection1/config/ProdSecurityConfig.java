@@ -1,5 +1,6 @@
 package com.example.springsecsection1.config;
 
+import com.example.springsecsection1.exceptionhandling.CustomAccessDeniedHandler;
 import com.example.springsecsection1.exceptionhandling.CustomBasicAuthenticationEntryPoint;
 import com.example.springsecsection1.filter.CsrfCookieFilter;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -32,25 +34,28 @@ public class ProdSecurityConfig {
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler =
                 new CsrfTokenRequestAttributeHandler();
         //.requiresChannel(rcc -> rcc.anyRequest().requiresSecure()) https
-        http.securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
-                .sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+        http.sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration corsConfiguration = new CorsConfiguration();
                     corsConfiguration.setAllowedOrigins(Collections.singletonList("*"));
                     corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
                     corsConfiguration.setAllowCredentials(true);
                     corsConfiguration.setMaxAge(3600L);
+                    corsConfiguration.setExposedHeaders(Arrays.asList("Authorization"));
                     return null;
                 }))
                 //.csrf(csrfConfig->csrfConfig.disable())
                 .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JWTGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidationFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/test1", "/users").authenticated()
                         .requestMatchers("/test2").permitAll());
         http.formLogin(withDefaults());
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
 
