@@ -25,7 +25,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         // Construct the JSON response
         String jsonResponse =
                 String.format("{\"timestamp\": \"%s\", \"status\": %d, \"error\": \"%s\", \"message\": \"%s\", \"path\": \"%s\"}",
-                        currentTimeStamp, HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase(),
+                        currentTimeStamp, HttpStatus.FORBIDDEN.value(),"YEa "+ HttpStatus.FORBIDDEN.getReasonPhrase(),
                         message, path);
         response.getWriter().write(jsonResponse);
     }

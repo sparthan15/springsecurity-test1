@@ -51,7 +51,7 @@ public class ProdSecurityConfig {
                 .addFilterAfter(new JWTGeneratorFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new JWTTokenValidationFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/test1", "/users").authenticated()
+                        .requestMatchers("/test1", "/users", "/user").authenticated()
                         .requestMatchers("/test2").permitAll());
         http.formLogin(withDefaults());
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
