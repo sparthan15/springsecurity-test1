@@ -28,21 +28,22 @@ public class JWTTokenValidationFilter extends OncePerRequestFilter {
         String jwt = request.getHeader(JWT_HEADER);
         if (jwt != null) {
             try {
-                Environment environment = getEnvironment();
-                if (environment != null) {
-                    String secret = environment.getProperty(JWT_SECRET, JWT_SECRET_DEFAULT);
+                Environment env = getEnvironment();
+                if (env != null) {
+                    String secret = env.getProperty(JWT_SECRET,
+                            JWT_SECRET_DEFAULT);
                     SecretKey secretKey =
                             Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
                     if (null != secretKey) {
-                        Claims claims = Jwts.parserBuilder()
-                                .setSigningKey(secretKey)
+                        Claims claims = Jwts.parserBuilder().setSigningKey(secretKey)
                                 .build()
-                                .parseClaimsJwt(jwt).getBody();
-                        String username = String.valueOf(claims.get(USERNAME));
-                        String authorities = String.valueOf(claims.get(AUTHORITIES));
+                                .parseClaimsJws(jwt)
+                                .getBody();
+                        String username = String.valueOf(claims.get("username"));
+                        String authorities = String.valueOf(claims.get("authorities"));
                         Authentication authentication =
                                 new UsernamePasswordAuthenticationToken(username, null,
-                                        AuthorityUtils.commaSeparatedStringToAuthorityList(authorities));
+                                AuthorityUtils.commaSeparatedStringToAuthorityList(authorities));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
                 }

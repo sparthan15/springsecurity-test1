@@ -39,7 +39,8 @@ public class JWTGeneratorFilter extends OncePerRequestFilter {
                                             .collect(Collectors.joining("")))
                             .setIssuedAt(new Date())
                             .setExpiration(new Date(new Date().getTime() + 30000000))
-                            .signWith(secretKey).compact();
+                            .signWith(secretKey)
+                            .compact();
                     response.setHeader(JWT_HEADER, jwt);
                 }
 
